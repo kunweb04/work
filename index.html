@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>工作台</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+      color: #2d3436;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .dashboard {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 15px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 15px;
+      padding: 20px;
+      box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+      backdrop-filter: blur(4px);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .card::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .card::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 3px;
+    }
+
+    .card::-webkit-scrollbar-thumb {
+      background: rgba(225, 112, 85, 0.5);
+      border-radius: 3px;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 40px rgba(31, 38, 135, 0.2);
+    }
+
+    .todo-list {
+      list-style: none;
+    }
+
+    .todo-item {
+      display: flex;
+      align-items: center;
+      padding: 10px;
+      margin: 6px 0;
+      background: rgba(255, 255, 255, 0.7);
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .todo-item:hover {
+      background: rgba(255, 255, 255, 0.9);
+      transform: translateX(5px);
+    }
+
+    .todo-item input[type="checkbox"] {
+      margin-right: 10px;
+      width: 18px;
+      height: 18px;
+      accent-color: #ff7675;
+    }
+
+    .todo-item.completed {
+      text-decoration: line-through;
+      color: #b2bec3;
+    }
+
+    .timer-display {
+      font-size: 2.5em;
+      text-align: center;
+      margin: 15px 0;
+      font-weight: 600;
+      color: #e17055;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .timer-controls {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+    }
+
+    .timer-input input {
+      width: 60px;
+      padding: 8px;
+      border: 1px solid rgba(225, 112, 85, 0.2);
+      border-radius: 6px;
+      text-align: center;
+    }
+
+    .timer-mode {
+      text-align: center;
+      margin-bottom: 10px;
+      font-size: 0.9em;
+      color: #e17055;
+    }
+
+    .timer-controls button,
+    .todo-input button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #ff7675 0%, #e17055 100%);
+      color: white;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(225, 112, 85, 0.3);
+    }
+
+    .todo-item button {
+      margin-left: auto;
+      padding: 4px 8px;
+      background: rgba(225, 112, 85, 0.1);
+      border: none;
+      border-radius: 6px;
+      color: #e17055;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .todo-item button:hover {
+      background: rgba(225, 112, 85, 0.2);
+    }
+
+    .timer-controls button:hover,
+    .todo-input button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(225, 112, 85, 0.4);
+    }
+
+    .quick-links {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 15px;
+    }
+
+    .quick-link {
+      padding: 12px;
+      background: linear-gradient(135deg, #ffd6d6 0%, #fff6e4 100%);
+      border-radius: 8px;
+      text-align: center;
+      text-decoration: none;
+      color: #e17055;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
+
+    .quick-link:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+    }
+
+    .weather-card {
+      grid-row: span 2;
+    }
+
+    .memo-card {
+      grid-row: span 2;
+    }
+
+    h2 {
+      margin-bottom: 15px;
+      color: #e17055;
+      font-size: 1.3em;
+      position: relative;
+      padding-bottom: 8px;
+    }
+
+    h2::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 50px;
+      height: 3px;
+      background: linear-gradient(to right, #ff7675, #e17055);
+      border-radius: 3px;
+    }
+
+    .weather-info p {
+      margin: 6px 0;
+      font-size: 1em;
+      padding: 6px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.5);
+    }
+
+    .weather-section {
+      margin-bottom: 12px;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.5);
+      border-radius: 12px;
+      backdrop-filter: blur(4px);
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .weather-section::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .weather-section::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 3px;
+    }
+
+    .weather-section::-webkit-scrollbar-thumb {
+      background: rgba(225, 112, 85, 0.5);
+      border-radius: 3px;
+    }
+
+    #memoText {
+      width: 100%;
+      height: 200px;
+      padding: 15px;
+      border: 1px solid rgba(225, 112, 85, 0.2);
+      border-radius: 8px;
+      resize: vertical;
+      margin-bottom: 10px;
+      font-family: inherit;
+      background: rgba(255, 255, 255, 0.7);
+      transition: all 0.3s ease;
+    }
+
+    #memoText:focus {
+      outline: none;
+      border-color: #e17055;
+      box-shadow: 0 0 0 3px rgba(225, 112, 85, 0.1);
+    }
+
+    .forecast-item, .hourly-item {
+      padding: 8px;
+      margin: 6px 0;
+      background: rgba(255, 255, 255, 0.7);
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .forecast-item:hover, .hourly-item:hover {
+      background: rgba(255, 255, 255, 0.9);
+      transform: translateX(5px);
+    }
+
+    .alarm {
+      background: linear-gradient(135deg, #fff6e4 0%, #ffeaa7 100%);
+      color: #e17055;
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
+
+    .todo-input {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    #newTodo {
+      flex: 1;
+      padding: 12px;
+      border: 1px solid rgba(225, 112, 85, 0.2);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.7);
+      transition: all 0.3s ease;
+    }
+
+    #newTodo:focus {
+      outline: none;
+      border-color: #e17055;
+      box-shadow: 0 0 0 3px rgba(225, 112, 85, 0.1);
+    }
+
+    .save-indicator {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 12px 24px;
+      background: rgba(231, 76, 60, 0.9);
+      color: white;
+      border-radius: 8px;
+      display: none;
+      animation: fadeIn 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard">
+    <div class="card weather-card">
+      <h2>天气</h2>
+      <div class="weather-section">
+        <div class="weather-info">
+          <p id="temperature">温度: 加载中...</p>
+          <p id="humidity">湿度: 加载中...</p>
+          <p id="wind">风向: 加载中...</p>
+          <p id="pressure">气压: 加载中...</p>
+          <p id="uv">紫外线指数: 加载中...</p>
+        </div>
+      </div>
+
+      <div class="weather-section">
+        <h2>三日预报</h2>
+        <div id="forecastList">加载中...</div>
+      </div>
+
+      <div class="weather-section">
+        <h2>未来6小时</h2>
+        <div id="hourlyList">加载中...</div>
+      </div>
+
+      <div class="alarm">
+        <h2>预警信息</h2>
+        <p id="alarmInfo">暂无预警</p>
+      </div>
+    </div>
+    <div class="card memo-card">
+      <h2>临时备忘录</h2>
+      <textarea id="memoText" placeholder="在这里输入笔记..."></textarea>
+    </div>
+    <div class="card todo-card">
+      <h2>待办事项</h2>
+      <div class="todo-input">
+        <input type="text" id="newTodo" placeholder="添加新的待办事项...">
+        <button onclick="addTodo()">添加</button>
+      </div>
+      <ul id="todoList" class="todo-list"></ul>
+    </div>
+    <div class="card timer-card">
+        <h2>计时器</h2>
+        <div class="timer-mode" id="timerMode">当前模式：正计时</div>
+        <div class="timer-input">
+          <input type="number" id="hours" placeholder="时" min="0">
+          <input type="number" id="minutes" placeholder="分" min="0" max="59">
+          <input type="number" id="seconds" placeholder="秒" min="0" max="59">
+        </div>
+        <div class="timer-display" id="timer">00:00:00</div>
+        <div class="timer-controls">
+          <button onclick="startTimer()">开始</button>
+          <button onclick="pauseTimer()">暂停</button>
+          <button onclick="resetTimer()">重置</button>
+          <button onclick="toggleTimerMode()">切换模式</button>
+        </div>
+      </div>
+    <div class="card links-card">
+      <h2>快速链接</h2>
+      <div class="quick-links">
+        <a href="https://www.google.com" class="quick-link" target="_blank">Google</a>
+        <a href="https://www.github.com" class="quick-link" target="_blank">GitHub</a>
+        <a href="https://chatgpt.com/" class="quick-link" target="_blank">chatgpt</a>
+        <a href="https://https://chat.deepseek.com/" class="quick-link" target="_blank">deepseek</a>
+        <a href="https://uiverse.io/elements" class="quick-link" target="_blank">素材库</a>
+        <a href="https://oho1417.com" class="quick-link" target="_blank">主页</a>
+      </div>
+    </div>
+  </div>
+  <div class="save-indicator" id="saveIndicator">已保存</div>
+  <script>
+    // 天气功能
+    async function fetchWeather() {
+      const apiKey = 'a8180c40e5a34daebeabe6b8310ec4d4';
+      const locationName = '马六甲';
+
+      // 获取城市ID
+      const geoResponse = await fetch(`https://geoapi.qweather.com/v2/city/lookup?location=${encodeURIComponent(locationName)}&key=${apiKey}`);
+      const geoData = await geoResponse.json();
+      if (geoData.code !== '200' || !geoData.location || geoData.location.length === 0) {
+        console.error('无法获取城市信息');
+        return;
+      }
+      const locationId = geoData.location[0].id;
+
+      // 获取实时天气数据
+      const nowResponse = await fetch(`https://devapi.qweather.com/v7/weather/now?location=${locationId}&key=${apiKey}&lang=zh`);
+      const nowData = await nowResponse.json();
+      if (nowData.code === '200' && nowData.now) {
+        document.getElementById('temperature').textContent = `温度: ${nowData.now.temp}°C`;
+        document.getElementById('humidity').textContent = `湿度: ${nowData.now.humidity}%`;
+        document.getElementById('wind').textContent = `风向: ${nowData.now.windDir}`;
+        document.getElementById('pressure').textContent = `气压: ${nowData.now.pressure} hPa`;
+      }
+
+      // 获取紫外线指数
+      const lifeResponse = await fetch(`https://devapi.qweather.com/v7/indices/1d?location=${locationId}&key=${apiKey}&type=3&lang=zh`);
+      const lifeData = await lifeResponse.json();
+      if (lifeData.code === '200' && lifeData.daily && lifeData.daily.length > 0) {
+        document.getElementById('uv').textContent = `紫外线指数: ${lifeData.daily[0].category}`;
+      }
+
+      // 三日预报
+      const forecastResponse = await fetch(`https://devapi.qweather.com/v7/weather/3d?location=${locationId}&key=${apiKey}&lang=zh`);
+      const forecastData = await forecastResponse.json();
+      if (forecastData.code === '200' && forecastData.daily) {
+        const forecastList = document.getElementById('forecastList');
+        forecastList.innerHTML = '';
+        forecastData.daily.forEach(item => {
+          const div = document.createElement('div');
+          div.className = 'forecast-item';
+          div.innerHTML = `<strong>${item.fxDate}</strong>：白天 ${item.textDay} / 夜间 ${item.textNight}，温度 ${item.tempMin}°C ~ ${item.tempMax}°C`;
+          forecastList.appendChild(div);
+        });
+      }
+
+      // 逐小时预报
+      const hourlyResponse = await fetch(`https://devapi.qweather.com/v7/weather/24h?location=${locationId}&key=${apiKey}&lang=zh`);
+      const hourlyData = await hourlyResponse.json();
+      if (hourlyData.code === '200' && hourlyData.hourly) {
+        const hourlyList = document.getElementById('hourlyList');
+        hourlyList.innerHTML = '';
+        hourlyData.hourly.slice(0, 6).forEach(item => {
+          const div = document.createElement('div');
+          div.className = 'hourly-item';
+          const time = item.fxTime.slice(11, 16);
+          div.textContent = `${time} - ${item.temp}°C，${item.text}`;
+          hourlyList.appendChild(div);
+        });
+      }
+
+      // 灾害预警
+      const alarmResponse = await fetch(`https://devapi.qweather.com/v7/alarm?location=${locationId}&key=${apiKey}&lang=zh`);
+      const alarmData = await alarmResponse.json();
+      if (alarmData.code === '200' && alarmData.alarm && alarmData.alarm.length > 0) {
+        const alarm = alarmData.alarm[0];
+        document.getElementById('alarmInfo').textContent = `${alarm.title} - ${alarm.level}`;
+      }
+    }
+
+    // 备忘录功能
+    const memoText = document.getElementById('memoText');
+    window.addEventListener('load', () => {
+      memoText.value = localStorage.getItem('tempMemo') || '';
+    });
+    memoText.addEventListener('input', (e) => {
+      localStorage.setItem('tempMemo', e.target.value);
+      showSaveIndicator();
+    });
+    window.addEventListener('beforeunload', () => {
+      localStorage.removeItem('tempMemo');
+    });
+
+    // 待办事项功能
+    let todos = JSON.parse(localStorage.getItem('todos')) || [];
+    function deleteTodo(index) {
+      if (confirm("确定删除？")) {
+        todos.splice(index, 1);
+        localStorage.setItem('todos', JSON.stringify(todos));
+        renderTodos();
+        showSaveIndicator();
+      }
+    }
+
+    function renderTodos() {
+      const todoList = document.getElementById('todoList');
+      todoList.innerHTML = todos.map((todo, index) => `
+        <li class="todo-item ${todo.completed ? 'completed' : ''}">
+          <input type="checkbox" ${todo.completed ? 'checked' : ''} onchange="toggleTodo(${index})">
+          <span>${todo.text}</span>
+          <button onclick="deleteTodo(${index})">删除</button>
+        </li>
+      `).join('');
+    }
+
+    function addTodo() {
+      const input = document.getElementById('newTodo');
+      if (input.value.trim()) {
+        todos.push({ text: input.value.trim(), completed: false });
+        input.value = '';
+        localStorage.setItem('todos', JSON.stringify(todos));
+        renderTodos();
+        showSaveIndicator();
+      }
+    }
+
+    function toggleTodo(index) {
+      todos[index].completed = !todos[index].completed;
+      localStorage.setItem('todos', JSON.stringify(todos));
+      renderTodos();
+    }
+
+    // 计时器功能
+    let timer = null;
+    let seconds = 0;
+    let isCountdown = false;
+    let targetSeconds = 0;
+    
+    function toggleTimerMode() {
+      isCountdown = !isCountdown;
+      resetTimer();
+      document.getElementById('timerMode').textContent = 
+        `当前模式：${isCountdown ? '倒计时' : '正计时'}`;
+    }
+
+    function startTimer() {
+      if (isCountdown) {
+        const hours = parseInt(document.getElementById('hours').value) || 0;
+        const minutes = parseInt(document.getElementById('minutes').value) || 0;
+        const secs = parseInt(document.getElementById('seconds').value) || 0;
+        targetSeconds = hours * 3600 + minutes * 60 + secs;
+        seconds = targetSeconds;
+      }
+
+      if (!timer) {
+        timer = setInterval(() => {
+          if (isCountdown) {
+            if (seconds <= 0) {
+              pauseTimer();
+              alert("时间到！");
+              return;
+            }
+            seconds--;
+          } else {
+            seconds++;
+          }
+          updateTimerDisplay();
+        }, 1000);
+      }
+    }
+
+    function pauseTimer() {
+      clearInterval(timer);
+      timer = null;
+    }
+
+    function resetTimer() {
+      pauseTimer();
+      if (isCountdown) {
+        seconds = targetSeconds;
+      } else {
+        seconds = 0;
+      }
+      updateTimerDisplay();
+    }
+
+    function updateTimerDisplay() {
+      const displaySeconds = isCountdown ? Math.max(0, seconds) : seconds;
+      const hours = Math.floor(displaySeconds / 3600).toString().padStart(2, '0');
+      const minutes = Math.floor((displaySeconds % 3600) / 60).toString().padStart(2, '0');
+      const secs = (displaySeconds % 60).toString().padStart(2, '0');
+      document.getElementById('timer').textContent = `${hours}:${minutes}:${secs}`;
+      
+      if (isCountdown) {
+        document.getElementById('timer').style.color = seconds <= 60 ? '#ff4757' : '#e17055';
+      } else {
+        document.getElementById('timer').style.color = '#e17055';
+      }
+    }
+
+    // 保存提示
+    function showSaveIndicator() {
+      const indicator = document.getElementById('saveIndicator');
+      indicator.style.display = 'block';
+      setTimeout(() => indicator.style.display = 'none', 2000);
+    }
+
+    // 初始化
+    window.onload = () => {
+      fetchWeather();
+      renderTodos();
+      setInterval(fetchWeather, 600000); // 每10分钟更新天气
+    }
+  </script>
+</body>
+</html>
