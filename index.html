@@ -147,6 +147,31 @@
       background: rgba(225, 112, 85, 0.2);
     }
 
+    .todo-card {
+      grid-row: span 2;
+    }
+
+    .todo-list {
+      list-style: none;
+      max-height: 400px;
+      overflow-y: auto;
+      padding-right: 10px;
+    }
+
+    .todo-list::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .todo-list::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 3px;
+    }
+
+    .todo-list::-webkit-scrollbar-thumb {
+      background: rgba(225, 112, 85, 0.5);
+      border-radius: 3px;
+    }
+    
     .timer-controls button:hover,
     .todo-input button:hover {
       transform: translateY(-2px);
